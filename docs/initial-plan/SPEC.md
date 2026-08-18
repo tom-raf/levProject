@@ -56,10 +56,10 @@ Build the pipeline described in `CONTEXT.md`/`PLAN.md`: an **Analyst** proposes 
 - Choosing or wiring a specific model provider/SDK (OpenRouter vs. Anthropic direct) and the resulting Analyst/Reviewer model choice — explicitly deferred by the user to a separate follow-up. This spec builds the Analyst/Reviewer *interfaces* only.
 - Battery state-of-charge modelling.
 - More than one reject/replan round.
-- A dashboard UI.
 - A third data source beyond price and carbon intensity.
 - The deferred-compute-load/batch-job task type (noted only as a possible future extension, not built here).
 - Continuous intraday scheduling and exposing the Analyst's search process live (both noted as possible future extensions, not built here).
+- A simple read-only dashboard (e.g. Streamlit or a static HTML page) rendering the per-day briefs and end-of-run rollup — noted only as a possible future extension, not built here. It's a viewer over already-structured `Recommendation` output, not a new data model, and not a replacement for the printed trace as the primary live-narration surface.
 
 ## Further Notes
 

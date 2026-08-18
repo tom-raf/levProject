@@ -57,7 +57,6 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 
 - Battery state-of-charge modelling — real engineering, zero agent content (min-gap is a wall-clock timestamp check, not an SOC model)
 - More than one reject/replan round — one shows the mechanism just as well
-- A dashboard UI — a printed trace is easier to narrate live
 - A third data source — two signals (price, carbon) is enough to show a genuine trade-off
 - The deferred-compute-load (batch job) task type — grid-scale battery only for the core demo; see Extensions below
 - Continuous intraday scheduling, and exposing the search process live — see Extensions below
@@ -66,6 +65,7 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 
 - Exposing the Analyst's search process live — walking through each candidate window and narrating why it's kept/rejected, instead of only returning the final answer. This is the more interesting "why agents, not a script" story if there's time to build it.
 - The deferred-compute-load axis (the data centre's own batch jobs, with an invented soft priority/SLA input) as an alternative or additional task type to the battery.
+- A simple read-only dashboard (e.g. Streamlit or a static HTML page) rendering the per-day briefs and end-of-run rollup the pipeline already produces — no new data model, not a replacement for the printed trace as the primary live-narration surface.
 
 ## `rules.py` constants (resolved)
 
