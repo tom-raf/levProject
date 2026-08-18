@@ -53,7 +53,7 @@ Build the pipeline described in `CONTEXT.md`/`PLAN.md`: an **Analyst** proposes 
 
 ## Out of Scope
 
-- Choosing or wiring a specific model provider/SDK (OpenRouter vs. Anthropic direct) and the resulting Analyst/Reviewer model choice — explicitly deferred by the user to a separate follow-up. This spec builds the Analyst/Reviewer *interfaces* only.
+- Wiring the actual Analyst/Reviewer model calls. Provider and models are now decided (OpenRouter, `anthropic/claude-opus-5` for Analyst, `anthropic/claude-sonnet-5` for Reviewer), but wiring them in is tracked as a separate follow-up ticket, blocked by the single-day decision core. This spec builds the Analyst/Reviewer *interfaces* only.
 - Battery state-of-charge modelling.
 - More than one reject/replan round.
 - A third data source beyond price and carbon intensity.
@@ -65,4 +65,4 @@ Build the pipeline described in `CONTEXT.md`/`PLAN.md`: an **Analyst** proposes 
 
 - `CONTEXT.md` and `rules.py` already exist in the repo root and should be treated as settled vocabulary/logic, not re-derived.
 - `docs/initial-plan/PLAN.md` documents the full design history and rationale behind every decision above; this spec operationalizes it into buildable work.
-- Once the model-provider decision lands, a follow-up ticket should wire the actual Analyst/Reviewer model calls behind the interfaces built here.
+- Model provider/tiering is now decided (OpenRouter, `anthropic/claude-opus-5` Analyst / `anthropic/claude-sonnet-5` Reviewer) — see issue #5 for wiring the actual model calls behind the interfaces built here.

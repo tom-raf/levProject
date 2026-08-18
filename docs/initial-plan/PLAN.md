@@ -34,7 +34,7 @@ rules.py (constants) ──▶ check_rules()          │        │
                                               Recommendation
 ```
 
-Looped once per simulated day (e.g. 3–5 days), reusing the same propose→check→replan→approve flow each time — not a continuous intraday scheduler. Model choice per agent is TBD (see "Open questions").
+Looped once per simulated day (e.g. 3–5 days), reusing the same propose→check→replan→approve flow each time — not a continuous intraday scheduler. Fetching and rule-checking happen in plain code, not via LLM tool-calling — Analyst and Reviewer each receive already-prepared data and return one structured response, so no agentic tool-use loop is needed regardless of provider.
 
 - **Data:** two public, unauthenticated UK energy APIs — verified live while scoping this — plus a local `rules.py` of plain constants (price cap, allowed window, min gap, charge duration). The rules file is not an API and is checked in code, not by a model. Both APIs return 30-minute-granularity data.
 - **Tools:** thin wrappers around the two APIs, plus one that reads `rules.py`. No logic beyond fetch/parse/return. Both a live path and a disk-cached path are implemented with an easy switch — live is primary for the actual demo run, cache is the fallback if live fails, and the sole path for rehearsal runs.
@@ -46,9 +46,9 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 | Layer | Choice | Why |
 |---|---|---|
 | Language | Python | fastest path to something runnable in 2 days |
-| Model access | **TBD** — likely OpenRouter, possibly Anthropic API direct | pending; see "Open questions" |
-| Analyst model | **TBD** | pending model-provider decision |
-| Reviewer model | **TBD** — leaning toward a stronger model than a narrow rule-checker now that Reviewer does soft judgment, not just a pass/fail gate | pending model-provider decision |
+| Model access | OpenRouter (OpenAI-compatible chat completions API) | one integration point works across providers; no agentic tool-use loop needed since fetching/rule-checking happen in plain code, not via LLM tool-calling |
+| Analyst model | `anthropic/claude-opus-5` (via OpenRouter) | the harder reasoning task — weighing price vs. carbon and explaining the trade-off |
+| Reviewer model | `anthropic/claude-sonnet-5` (via OpenRouter) | bumped up from the original narrow-rule-checker pick now that Reviewer exercises soft judgment, not just a pass/fail gate |
 | Orchestration | plain Python, no agent framework (line count TBD — grew since the original ~30-line one-shot estimate once the multi-day loop, live/cache switch, and soft-judgment handling were added) | control flow — propose → check → reject-once → approve, looped per day — stays visible in one file, not hidden behind a framework abstraction |
 | Data sources | `api.carbonintensity.org.uk` (National Grid ESO), `api.octopus.energy` (Agile tariff) | both free, unauthenticated, real UK utility-grade data — no mocking; both confirmed live at 30-minute granularity |
 | Output | stdout trace + one markdown brief per simulated day + end-of-run rollup | no dashboard, no database — a printed trace is easier to narrate live than a UI |
@@ -76,7 +76,6 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 
 Day 1's seed state: cheapest window and cleanest window don't overlap, and the Analyst's first proposal overweights price — giving the Reviewer a genuine, explainable reason to send it back once, rather than a contrived rule trip.
 
-## Open questions before building
+## Model provider and tiering (resolved)
 
-- **Model provider and tiering** — likely OpenRouter (a few pounds of credits going on tomorrow), possibly Anthropic API direct. Reopens Analyst/Reviewer model choice and whether the orchestration can still use a ready-made tool-use loop or needs one hand-rolled.
-- `ANTHROPIC_API_KEY` confirmed **not set** in this environment — only relevant if the Anthropic-direct path is chosen
+OpenRouter, using `anthropic/claude-opus-5` for the Analyst and `anthropic/claude-sonnet-5` for the Reviewer — funded via a small OpenRouter credit balance. `ANTHROPIC_API_KEY` is not needed for this path. Wiring the real model calls behind the Analyst/Reviewer interfaces is tracked as a follow-up ticket, blocked by the single-day decision core.
