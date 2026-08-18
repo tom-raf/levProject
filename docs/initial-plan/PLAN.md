@@ -4,7 +4,7 @@ Status: **planning only** — nothing built yet. See [`grid-dispatch-loop.html`]
 
 ## What this is
 
-A small demo for an interview at an electricity/battery/data-centre company. It shows two AI agents deciding *when* to charge a grid-scale battery (simulated as a data-centre asset, no fixed deadline) by weighing live electricity price against live grid carbon intensity, looped across several simulated days. A deferred-compute-load version (the data centre's own batch jobs) was considered and set aside — see "Deliberately left out."
+A small demo relevant to an electricity/battery/data-centre company's operations. It shows two AI agents deciding *when* to charge a grid-scale battery (simulated as a data-centre asset, no fixed deadline) by weighing live electricity price against live grid carbon intensity, looped across several simulated days. A deferred-compute-load version (the data centre's own batch jobs) was considered and set aside — see "Deliberately left out."
 
 ## Why this problem
 
@@ -37,7 +37,7 @@ rules.py (constants) ──▶ check_rules()          │        │
 Looped once per simulated day (e.g. 3–5 days), reusing the same propose→check→replan→approve flow each time — not a continuous intraday scheduler. Model choice per agent is TBD (see "Open questions").
 
 - **Data:** two public, unauthenticated UK energy APIs — verified live while scoping this — plus a local `rules.py` of plain constants (price cap, allowed window, min gap, charge duration). The rules file is not an API and is checked in code, not by a model. Both APIs return 30-minute-granularity data.
-- **Tools:** thin wrappers around the two APIs, plus one that reads `rules.py`. No logic beyond fetch/parse/return. Both a live path and a disk-cached path are implemented with an easy switch — live is primary for the actual interview, cache is the fallback if live fails, and the sole path for rehearsal runs.
+- **Tools:** thin wrappers around the two APIs, plus one that reads `rules.py`. No logic beyond fetch/parse/return. Both a live path and a disk-cached path are implemented with an easy switch — live is primary for the actual demo run, cache is the fallback if live fails, and the sole path for rehearsal runs.
 - **Agents:** two LLM calls per simulated day.
 - **Output:** one markdown brief per simulated day, plus a short end-of-run rollup (days simulated, count sent back, avg price/carbon saved vs. a price-only baseline) — the same handover a human ops analyst would give at shift change.
 
@@ -69,7 +69,7 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 
 ## `rules.py` constants (resolved)
 
-- `price_cap`: 25th percentile of that simulated day's quoted Agile prices — derived per day, not hardcoded, since a fixed p/kWh number would already be stale by the interview
+- `price_cap`: 25th percentile of that simulated day's quoted Agile prices — derived per day, not hardcoded, since a fixed p/kWh number would already be stale by demo day
 - `allowed_window`: bounded only by the forecast horizon (~24–48h ahead, matching API data availability) — no time-of-day restriction, since there's no real deadline for a grid-scale battery
 - `charge_duration_hours`: 4 — matches the most common real UK utility-scale BESS configuration
 - `min_gap_hours`: 16 — wall-clock hours required between the end of one recommended window and the start of the next

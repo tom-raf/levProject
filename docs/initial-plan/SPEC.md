@@ -4,7 +4,7 @@ Published as [github.com/tom-raf/levProject#1](https://github.com/tom-raf/levPro
 
 ## Problem Statement
 
-The user has an interview in ~2 days at an electricity/battery/data-centre company and wants a working demo showing two AI agents reasoning about *when* to charge a grid-scale battery — a genuine judgment call under competing constraints (price vs. carbon), not a sort-and-pick script. Right now only the design is settled (`docs/initial-plan/PLAN.md`, `CONTEXT.md`, `rules.py`) — none of the orchestration, data-fetching, or agent code exists yet, and the demo needs to run reliably live, with a cache fallback in case the interview-day network misbehaves.
+There's a need for a working demo, relevant to an electricity/battery/data-centre company's operations, showing two AI agents reasoning about *when* to charge a grid-scale battery — a genuine judgment call under competing constraints (price vs. carbon), not a sort-and-pick script. Right now only the design is settled (`docs/initial-plan/PLAN.md`, `CONTEXT.md`, `rules.py`) — none of the orchestration, data-fetching, or agent code exists yet, and the demo needs to run reliably live, with a cache fallback in case the network misbehaves on the day.
 
 ## Solution
 
@@ -13,7 +13,7 @@ Build the pipeline described in `CONTEXT.md`/`PLAN.md`: an **Analyst** proposes 
 ## User Stories
 
 1. As the presenter running the live demo, I want the system to fetch live price and carbon data by default, so that the demo uses real, current numbers when narrating it.
-2. As the presenter, I want an easy switch to a pre-fetched disk cache, so that a live API outage or rate limit during the interview doesn't derail the demo.
+2. As the presenter, I want an easy switch to a pre-fetched disk cache, so that a live API outage or rate limit during a live run doesn't derail the demo.
 3. As the presenter, I want the cache to cover the full multi-day simulated window, so that switching to cache mid-demo doesn't leave later simulated days without data.
 4. As the presenter, I want each simulated day to produce a one-page markdown brief, so that I can hand it over exactly as a human ops analyst would at shift change.
 5. As the presenter, I want an end-of-run rollup (days simulated, count sent back, average price/carbon saved vs. a price-only baseline), so that the repetition across days adds up to a demonstrable result, not five disconnected printouts.
@@ -34,7 +34,7 @@ Build the pipeline described in `CONTEXT.md`/`PLAN.md`: an **Analyst** proposes 
 ## Implementation Decisions
 
 - **`rules.py`** (already built, treat as settled): `price_cap(day_prices)` returns the 25th percentile of that day's prices; `check_rules(window, day_prices, last_window_end)` returns a list of violated hard constraints (price cap, `MIN_GAP_HOURS` = 16, wall-clock only); `CHARGE_DURATION_HOURS` = 4; `ProposedWindow` dataclass (`start`, `avg_price`).
-- **Data tools**: thin wrappers around `api.carbonintensity.org.uk` and `api.octopus.energy` — fetch/parse/return only, no logic. Both a live path and a disk-cache path exist behind one switch (env var or flag); live is primary, cache is the fallback on failure, and cache is the only path during rehearsal. The cache must be pre-populated to cover the entire multi-day simulated window before the interview.
+- **Data tools**: thin wrappers around `api.carbonintensity.org.uk` and `api.octopus.energy` — fetch/parse/return only, no logic. Both a live path and a disk-cache path exist behind one switch (env var or flag); live is primary, cache is the fallback on failure, and cache is the only path during rehearsal. The cache must be pre-populated to cover the entire multi-day simulated window before a live demo run.
 - **Analyst interface**: a callable taking a simulated day's price/carbon forecast (and, on a replan, the Reviewer's rejection reason) and returning a `ProposedWindow` plus a plain-language explanation string. Model/provider is an implementation detail behind this interface, not decided here.
 - **Reviewer interface**: a callable taking a `ProposedWindow`, the `check_rules()` violation list, and the day's forecast, returning an approve/reject decision plus a plain-language reasoning string (covering both hard-rule violations and soft judgment). Model/provider likewise deferred.
 - **Single-day decision seam**: one function taking a day's forecast data, the Analyst callable, the Reviewer callable, and `last_window_end`, implementing propose → check (hard + soft) → replan once on reject → approve or unresolved. Returns a `Recommendation` (Window, explanation, status: approved/unresolved). This is the seam the test suite exercises.
