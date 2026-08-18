@@ -34,7 +34,7 @@ rules.py (constants) ──▶ check_rules()          │        │
                                               Recommendation
 ```
 
-Looped once per simulated day (e.g. 3–5 days), reusing the same propose→check→replan→approve flow each time — not a continuous intraday scheduler. Fetching and rule-checking happen in plain code, not via LLM tool-calling — Analyst and Reviewer each receive already-prepared data and return one structured response, so no agentic tool-use loop is needed regardless of provider.
+Looped once per simulated day (2 days — see "Data horizon" below), reusing the same propose→check→replan→approve flow each time — not a continuous intraday scheduler. Fetching and rule-checking happen in plain code, not via LLM tool-calling — Analyst and Reviewer each receive already-prepared data and return one structured response, so no agentic tool-use loop is needed regardless of provider.
 
 - **Data:** two public, unauthenticated UK energy APIs — verified live while scoping this — plus a local `rules.py` of plain constants (price cap, allowed window, min gap, charge duration). The rules file is not an API and is checked in code, not by a model. Both APIs return 30-minute-granularity data.
 - **Tools:** thin wrappers around the two APIs, plus one that reads `rules.py`. No logic beyond fetch/parse/return. Both a live path and a disk-cached path are implemented with an easy switch — live is primary for the actual demo run, cache is the fallback if live fails, and the sole path for rehearsal runs.
@@ -70,11 +70,15 @@ Looped once per simulated day (e.g. 3–5 days), reusing the same propose→chec
 ## `rules.py` constants (resolved)
 
 - `price_cap`: 25th percentile of that simulated day's quoted Agile prices — derived per day, not hardcoded, since a fixed p/kWh number would already be stale by demo day
-- `allowed_window`: bounded only by the forecast horizon (~24–48h ahead, matching API data availability) — no time-of-day restriction, since there's no real deadline for a grid-scale battery
+- `allowed_window`: bounded only by the forecast horizon (confirmed ~1 day ahead in practice — see "Data horizon" below) — no time-of-day restriction, since there's no real deadline for a grid-scale battery
 - `charge_duration_hours`: 4 — matches the most common real UK utility-scale BESS configuration
 - `min_gap_hours`: 16 — wall-clock hours required between the end of one recommended window and the start of the next
 
 Day 1's seed state: cheapest window and cleanest window don't overlap, and the Analyst's first proposal overweights price — giving the Reviewer a genuine, explainable reason to send it back once, rather than a contrived rule trip.
+
+## Data horizon (discovered during implementation)
+
+Confirmed live: Octopus Agile only publishes ~1 day ahead (today's prices are fully published; tomorrow's are partial, typically released mid-afternoon; nothing beyond that returns any data). A 5-day *forecast* loop isn't achievable on real future data. The multi-day loop therefore runs 2 days: day 1 is the seeded narrative day (guarantees the reject→replan story), day 2 is tomorrow's real (partial) forecast. Recent past days do have complete published data, so a longer "replay real recent days" loop remains an option if a longer demo is wanted later — not built now.
 
 ## Model provider and tiering (resolved)
 
