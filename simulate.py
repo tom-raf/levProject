@@ -67,11 +67,17 @@ def heuristic_analyst(forecast: DayForecast, reason: str | None) -> tuple[Propos
     return window, explanation
 
 
-def heuristic_reviewer(window: ProposedWindow, forecast: DayForecast) -> tuple[bool, str]:
+def heuristic_reviewer(window: ProposedWindow, forecast: DayForecast, violations: list[str]) -> tuple[bool, str]:
     candidates = _candidate_windows(forecast)
     cap = price_cap(forecast.prices)
     slot_index = round((window.start - _window_start(forecast.day, 0)).total_seconds() / 1800)
     window_carbon = mean(forecast.carbon[slot_index : slot_index + SLOTS_PER_WINDOW])
+
+    if violations:
+        return False, (
+            f"{'; '.join(violations)}. This window averages {window_carbon:.0f}gCO2/kWh, "
+            f"but that's moot -- a hard rule already disqualifies it."
+        )
 
     within_cap = [c for c in candidates if c[1] <= cap]
     if not within_cap:

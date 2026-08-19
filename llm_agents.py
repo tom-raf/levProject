@@ -120,7 +120,7 @@ def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
     return window, str(data["explanation"])
 
 
-def llm_reviewer(window: ProposedWindow, forecast) -> tuple[bool, str]:
+def llm_reviewer(window: ProposedWindow, forecast, violations: list[str]) -> tuple[bool, str]:
     candidates_text = _format_candidates(forecast, forecast.last_window_end)
     cap = price_cap(forecast.prices)
 
@@ -129,13 +129,27 @@ def llm_reviewer(window: ProposedWindow, forecast) -> tuple[bool, str]:
         "already been excluded from the candidate list, so every listed alternative is a fair comparison."
         if forecast.last_window_end is not None else ""
     )
-    system = (
-        "You are the Reviewer in a grid battery dispatch system. The hard rules (price cap, "
-        "min-gap) already passed -- your job is soft judgment only: is this a genuinely good "
-        f"price/carbon trade-off, or does a clearly better within-cap alternative exist?{gap_note} "
-        f"Price cap for {_forecast_label(forecast)}: {cap:.2f}p/kWh. "
-        'Respond with ONLY a JSON object: {"approved": <true|false>, "reasoning": "<plain language>"}.'
-    )
+
+    if violations:
+        # decide_day() enforces the reject regardless of what this call returns
+        # -- the model's job here is purely to explain the disqualification
+        # clearly, not to weigh in on it.
+        system = (
+            "You are the Reviewer in a grid battery dispatch system. This proposed window already "
+            f"fails a hard rule and cannot be approved: {'; '.join(violations)}. Explain why in clear, "
+            f"specific plain language, citing the actual numbers involved. Price cap for "
+            f"{_forecast_label(forecast)}: {cap:.2f}p/kWh. Do not second-guess the rule or suggest it "
+            'might still be approved. Respond with ONLY a JSON object: '
+            '{"approved": false, "reasoning": "<plain language>"}.'
+        )
+    else:
+        system = (
+            "You are the Reviewer in a grid battery dispatch system. The hard rules (price cap, "
+            "min-gap) already passed -- your job is soft judgment only: is this a genuinely good "
+            f"price/carbon trade-off, or does a clearly better within-cap alternative exist?{gap_note} "
+            f"Price cap for {_forecast_label(forecast)}: {cap:.2f}p/kWh. "
+            'Respond with ONLY a JSON object: {"approved": <true|false>, "reasoning": "<plain language>"}.'
+        )
     user = (
         f"Proposed window: start {window.start.isoformat()}, avg price {window.avg_price:.2f}p/kWh.\n\n"
         f"All candidate windows for context:\n{candidates_text}"

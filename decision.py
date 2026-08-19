@@ -36,9 +36,12 @@ class Recommendation:
 # Analyst: (forecast, prior_rejection_reason) -> (proposed window, plain-language explanation)
 Analyst = Callable[[DayForecast, str | None], tuple[ProposedWindow, str]]
 
-# Reviewer: (proposed window, forecast) -> (approved, plain-language reasoning)
-# Only called when the hard rules already pass -- it exercises soft judgment only.
-Reviewer = Callable[[ProposedWindow, DayForecast], tuple[bool, str]]
+# Reviewer: (proposed window, forecast, hard-rule violations) -> (approved, plain-language reasoning)
+# Always called, even when violations is non-empty -- it still owes a detailed
+# explanation for a disqualified window. Its approved return value is advisory
+# only: decide_day() forces approved=False whenever violations is non-empty,
+# so the hard gate is enforced in code, never by the model.
+Reviewer = Callable[[ProposedWindow, DayForecast, list[str]], tuple[bool, str]]
 
 
 # A step event is a plain dict with a "step" key
@@ -71,10 +74,9 @@ def decide_day(
 
         violations = check_rules(window, forecast.prices, last_window_end)
         emit({"step": "rule_check", "attempt": attempt_num, "violations": violations})
-        if violations:
-            return window, explanation, False, "; ".join(violations)
 
-        approved, reasoning = reviewer(window, forecast)
+        reviewer_approved, reasoning = reviewer(window, forecast, violations)
+        approved = reviewer_approved and not violations
         emit({"step": "reviewer_verdict", "attempt": attempt_num, "approved": approved, "reasoning": reasoning})
         return window, explanation, approved, reasoning
 
