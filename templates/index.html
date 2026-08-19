@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEVCELL — Grid Dispatch Loop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <div>
+        <div class="wordmark">LEV<span class="copper">CELL</span></div>
+        <div class="tagline">GRID DISPATCH LOOP — BATTERY CHARGE SCHEDULING</div>
+      </div>
+      <div class="titleblock">
+        <div class="titleblock-row"><span>DWG NO.</span><span class="tb-val">LC-DISPATCH-01</span></div>
+        <div class="titleblock-row"><span>MODE</span><span class="tb-val" id="tb-mode">—</span></div>
+        <div class="titleblock-row"><span>STATUS</span><span class="tb-val" id="tb-status">AWAITING RUN</span></div>
+      </div>
+    </header>
+
+    <div class="actions">
+      <button class="run-btn" id="btn-live" type="button">▶ LIVE</button>
+      <button class="run-btn" id="btn-simulated" type="button">▶ SIMULATED</button>
+    </div>
+
+    <div class="history-tabs" id="history-tabs">
+      <div class="history-empty">no runs yet this session — press LIVE or SIMULATED above</div>
+    </div>
+
+    <div class="grid-a">
+
+      <section class="panel chart-panel">
+        <div class="panel-head">
+          <div class="fig-title">FIG.1 — PRICE &amp; CARBON INTENSITY FORECAST</div>
+          <div class="legend">
+            <span class="legend-item"><span class="swatch swatch-price"></span>PRICE p/kWh</span>
+            <span class="legend-item"><span class="swatch swatch-carbon"></span>CARBON gCO2/kWh</span>
+          </div>
+        </div>
+        <svg id="chart-svg" viewBox="0 0 900 220" width="100%" height="230" class="chart-svg">
+          <text x="450" y="110" text-anchor="middle" class="chart-placeholder">no data yet</text>
+        </svg>
+        <div class="chart-readout">press LIVE or SIMULATED to run a decision</div>
+      </section>
+
+      <section class="panel recommendation-card">
+        <div class="panel-head-simple">RECOMMENDATION</div>
+        <div class="rec-status">
+          <span class="status-dot" id="rec-dot"></span>
+          <span class="status-label" id="rec-status-label">—</span>
+        </div>
+        <div class="rec-window" id="rec-window">—</div>
+        <div class="rec-duration" id="rec-duration">no run yet</div>
+        <div class="rec-stats">
+          <div class="stat-box">
+            <div class="stat-label">AVG PRICE</div>
+            <div class="stat-value stat-price" id="rec-price">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">AVG CARBON</div>
+            <div class="stat-value stat-carbon" id="rec-carbon">—</div>
+          </div>
+        </div>
+        <div class="rec-footnote">Price cap (P25, today's forecast): <b id="rec-cap">—</b></div>
+      </section>
+
+    </div>
+
+    <div class="grid-b">
+
+      <section class="panel soc-panel">
+        <div class="panel-head-simple">FIG.2 — CELL STATE OF CHARGE <span class="illustrative-badge">ILLUSTRATIVE — NOT REAL TELEMETRY</span></div>
+        <div class="soc-gauges">
+          <div class="soc-cell">
+            <div class="soc-cap"></div>
+            <div class="soc-bar"><div class="soc-fill soc-fill-now" id="soc-now" style="height: 0%;"></div></div>
+            <div class="soc-pct" id="soc-now-pct">—</div>
+            <div class="soc-caption">NOW</div>
+          </div>
+          <div class="soc-arrow">→</div>
+          <div class="soc-cell">
+            <div class="soc-cap"></div>
+            <div class="soc-bar"><div class="soc-fill soc-fill-post" id="soc-post" style="height: 0%;"></div></div>
+            <div class="soc-pct" id="soc-post-pct">—</div>
+            <div class="soc-caption">POST-CHARGE</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel mingap-panel">
+        <div class="panel-head-simple">FIG.3 — MIN-GAP CONSTRAINT (16H) <span class="live-only-badge">LIVE ONLY</span></div>
+        <svg viewBox="0 0 380 70" width="100%" height="70" class="mingap-svg">
+          <line x1="10" y1="40" x2="370" y2="40" class="mingap-line"></line>
+          <text x="190" y="40" text-anchor="middle" class="mingap-placeholder" dominant-baseline="middle">no Live run yet this session</text>
+        </svg>
+        <div class="mingap-note" id="mingap-note">applies only to Live runs</div>
+      </section>
+
+    </div>
+
+    <section class="panel transcript-panel">
+      <div class="transcript-head" id="transcript-toggle">
+        <div class="fig-title">AGENT TRANSCRIPT — ANALYST ⇄ REVIEWER</div>
+        <div class="transcript-toggle-label" id="transcript-toggle-label">[ − COLLAPSE ]</div>
+      </div>
+      <div class="transcript-body" id="transcript-body">
+        <div class="transcript-empty">press LIVE or SIMULATED above to watch the agents reason</div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
