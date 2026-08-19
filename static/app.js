@@ -156,6 +156,54 @@ function updateRecommendationCard(finalEvent, forecast) {
   document.getElementById("rec-cap").textContent = cap.toFixed(2) + "p/kWh";
 }
 
+// ---- min-gap panel (FIG.3) -- Live only, per PLAN.md decision 7 ----
+
+function renderMinGapEmpty(message) {
+  document.querySelector(".mingap-svg").innerHTML = `
+    <line x1="10" y1="40" x2="370" y2="40" class="mingap-line"></line>
+    <text x="190" y="40" text-anchor="middle" class="mingap-placeholder" dominant-baseline="middle">${message}</text>
+  `;
+  document.getElementById("mingap-note").textContent = "applies only to Live runs";
+}
+
+function updateMinGapPanel(ctx) {
+  if (ctx.type !== "live") {
+    renderMinGapEmpty("not applicable — Simulated run");
+    return;
+  }
+  const lastEnd = ctx.forecast.last_window_end;
+  if (!lastEnd) {
+    renderMinGapEmpty("no prior approved Live window this session");
+    return;
+  }
+
+  const prev = new Date(lastEnd);
+  const eligible = new Date(prev.getTime() + 16 * 3600000);
+  const next = new Date(ctx.final.window.start);
+  const actualGapH = (next - prev) / 3600000;
+  const clears = actualGapH >= 16;
+  const color = clears ? "var(--green)" : "var(--red)";
+  const fmt = (d) => d.toISOString().slice(11, 16);
+
+  const totalSpan = Math.max(actualGapH, 16) + 2;
+  const xFor = (hoursFromPrev) => 30 + (hoursFromPrev / totalSpan) * 320;
+  const prevX = xFor(0), eligibleX = xFor(16), nextX = xFor(actualGapH);
+
+  document.querySelector(".mingap-svg").innerHTML = `
+    <line x1="10" y1="40" x2="370" y2="40" class="mingap-line"></line>
+    <circle cx="${prevX.toFixed(1)}" cy="40" r="4" fill="var(--ink)"></circle>
+    <text x="${prevX.toFixed(1)}" y="56" font-size="9" text-anchor="middle" fill="var(--ink-soft)">prev end ${fmt(prev)}</text>
+    <line x1="${prevX.toFixed(1)}" y1="26" x2="${eligibleX.toFixed(1)}" y2="26" stroke="var(--red)" stroke-width="1.25" stroke-dasharray="3 2"></line>
+    <text x="${((prevX + eligibleX) / 2).toFixed(1)}" y="18" font-size="9" text-anchor="middle" fill="var(--red)">+16h min-gap</text>
+    <circle cx="${eligibleX.toFixed(1)}" cy="40" r="3" fill="none" stroke="var(--red)" stroke-width="1.25"></circle>
+    <text x="${eligibleX.toFixed(1)}" y="56" font-size="9" text-anchor="middle" fill="var(--ink-soft)">eligible ${fmt(eligible)}</text>
+    <circle cx="${nextX.toFixed(1)}" cy="40" r="4.5" fill="${color}"></circle>
+    <text x="${nextX.toFixed(1)}" y="56" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="600">next ${fmt(next)}</text>
+  `;
+  document.getElementById("mingap-note").innerHTML =
+    `actual gap: <b style="color:${color}">${actualGapH.toFixed(1)}h</b> — ${clears ? "clears constraint" : "violates constraint (&lt; 16h)"}`;
+}
+
 // ---- event handling (shared by live streaming and history replay) ----
 
 function handleEvent(ctx, event) {
@@ -185,6 +233,7 @@ function handleEvent(ctx, event) {
       ctx.final = event;
       updateRecommendationCard(event, ctx.forecast);
       renderChart(ctx.forecast, event.window.start);
+      updateMinGapPanel(ctx);
       break;
   }
 }
@@ -212,7 +261,7 @@ function selectHistoryTab(entry) {
   entry.tabEl.classList.add("active");
 
   resetTranscript();
-  const ctx = { forecast: null, final: null };
+  const ctx = { forecast: null, final: null, type: entry.type };
   for (const event of entry.events) handleEvent(ctx, event);
 
   document.getElementById("tb-mode").textContent = entry.type.toUpperCase();
@@ -232,7 +281,7 @@ async function runStream(type, url) {
   document.getElementById("tb-mode").textContent = type.toUpperCase();
   document.getElementById("tb-status").textContent = "RUNNING…";
 
-  const ctx = { forecast: null, final: null, events: [] };
+  const ctx = { forecast: null, final: null, events: [], type };
 
   try {
     const resp = await fetch(url, { method: "POST" });

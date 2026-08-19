@@ -20,6 +20,7 @@ from flask import Flask, Response, render_template
 from decision import decide_day
 from live import build_rolling_forecast
 from llm_agents import llm_analyst, llm_reviewer
+from rules import CHARGE_DURATION_HOURS
 from tools import get_carbon_forecast, get_price_forecast
 
 app = Flask(__name__)
@@ -35,6 +36,18 @@ RUN_HISTORY: list[dict] = []
 
 def _sse(event: dict) -> str:
     return f"data: {json.dumps(event)}\n\n"
+
+
+def _last_approved_live_window_end() -> datetime | None:
+    """The end of the most recently *approved* Live-type run this session, per
+    PLAN.md decision 7. Unresolved Live runs don't count (never validated as
+    safe), and Simulated runs are invisible to this lookup regardless of where
+    they fall in RUN_HISTORY's order -- filtering on type=="live" already
+    achieves that without any extra bookkeeping."""
+    for entry in reversed(RUN_HISTORY):
+        if entry["type"] == "live" and entry["status"] == "approved":
+            return datetime.fromisoformat(entry["window_start"]) + timedelta(hours=CHARGE_DURATION_HOURS)
+    return None
 
 
 @app.route("/")
@@ -80,13 +93,14 @@ def run_live():
         tomorrow_prices, tomorrow_carbon = None, None
 
     forecast = build_rolling_forecast(now, today_prices, today_carbon, tomorrow_prices, tomorrow_carbon)
-
-    # Most recently *approved* Live-type run this session, per PLAN.md decision
-    # 7 -- wired properly in ticket #12. Not yet implemented here.
-    last_window_end = None
+    last_window_end = _last_approved_live_window_end()
 
     def stream():
-        yield _sse({"step": "forecast", "start": forecast.start.isoformat(), "prices": forecast.prices, "carbon": forecast.carbon})
+        yield _sse({
+            "step": "forecast", "start": forecast.start.isoformat(),
+            "prices": forecast.prices, "carbon": forecast.carbon,
+            "last_window_end": last_window_end.isoformat() if last_window_end else None,
+        })
 
         events: queue.Queue = queue.Queue()
 
