@@ -218,7 +218,7 @@ function handleEvent(ctx, event) {
     case "rule_check":
       if (event.violations && event.violations.length) {
         markRejected(lastProposalEl);
-        appendTranscriptEntry("REVIEWER", event.violations.join("; "), { tone: "red" });
+        appendTranscriptEntry("RULE CHECK", event.violations.join("; "), { tone: "red" });
       }
       break;
     case "reviewer_verdict":
