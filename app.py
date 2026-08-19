@@ -105,8 +105,15 @@ def run_live():
         events: queue.Queue = queue.Queue()
 
         def worker():
-            decide_day(forecast, llm_analyst, llm_reviewer, last_window_end, on_step=events.put)
-            events.put(None)  # sentinel: decide_day() has returned
+            try:
+                decide_day(forecast, llm_analyst, llm_reviewer, last_window_end, on_step=events.put)
+            except Exception as exc:
+                # Without this, a crash here (e.g. a malformed LLM response) would leave the
+                # sentinel below unqueued -- the generator's events.get() would block forever
+                # and the browser would hang on RUNNING... with no way to recover but a reload.
+                events.put({"step": "error", "message": str(exc)})
+            finally:
+                events.put(None)  # sentinel: worker has finished, one way or another
 
         threading.Thread(target=worker, daemon=True).start()
 

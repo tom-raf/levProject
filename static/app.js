@@ -246,6 +246,9 @@ function handleEvent(ctx, event) {
       break;
     case "replan":
       break; // rejection reasoning already rendered above -- no separate line needed
+    case "error":
+      appendTranscriptEntry("ERROR", event.message, { tone: "red" });
+      break;
     case "final":
       ctx.final = event;
       updateRecommendationCard(event, ctx.forecast);
@@ -322,7 +325,10 @@ async function runStream(type, url) {
       }
     }
 
-    document.getElementById("tb-status").textContent = ctx.final ? ctx.final.status.toUpperCase() : "DONE";
+    const errored = ctx.events.some((e) => e.step === "error");
+    document.getElementById("tb-status").textContent = ctx.final
+      ? ctx.final.status.toUpperCase()
+      : errored ? "ERROR" : "DONE";
 
     const entry = { id: Date.now(), type, timestamp: new Date().toISOString(), events: ctx.events };
     runsHistory.push(entry);

@@ -115,6 +115,8 @@ def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
     content = _complete(ANALYST_MODEL, system, user)
     data = _extract_json(content)
 
+    if not isinstance(data.get("start"), str):
+        raise ValueError(f"Analyst returned a non-string start value: {data.get('start')!r}")
     start = datetime.fromisoformat(data["start"])
     window = ProposedWindow(start=start, avg_price=float(data["avg_price"]))
     return window, str(data["explanation"])
