@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; }
+</style>
+</helmet>
+<div style="font-family:'IBM Plex Mono',monospace;color:oklch(24% 0.045 255);background:repeating-linear-gradient(0deg, transparent, transparent 27px, oklch(90% 0.018 78) 27px, oklch(90% 0.018 78) 28px), repeating-linear-gradient(90deg, transparent, transparent 27px, oklch(90% 0.018 78) 27px, oklch(90% 0.018 78) 28px), oklch(96% 0.014 80);height:100vh;box-sizing:border-box;padding:20px 28px;display:flex;flex-direction:column;overflow:hidden;">
+  <div style="max-width:1560px;width:100%;margin:0 auto;display:flex;flex-direction:column;flex:1;min-height:0;">
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid oklch(24% 0.045 255);padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap;gap:12px;flex:none;">
+      <div>
+        <div style="font-family:'IBM Plex Sans Condensed';font-weight:700;font-size:28px;letter-spacing:2px;line-height:1;">LEV<span style="color:oklch(56% 0.13 48);">CELL</span></div>
+        <div style="font-size:10px;letter-spacing:2.5px;color:oklch(46% 0.03 255);margin-top:4px;">GRID DISPATCH LOOP &mdash; SYSTEM MAP</div>
+      </div>
+      <div style="border:1.5px solid oklch(24% 0.045 255);font-size:9.5px;line-height:1.6;min-width:300px;">
+        <div style="display:grid;grid-template-columns:60px 1fr;gap:8px;padding:2px 9px;border-bottom:1px solid oklch(80% 0.02 75);"><span style="color:oklch(46% 0.03 255);">DOC</span><span style="font-weight:600;">architecture &mdash; backend to frontend</span></div>
+        <div style="display:grid;grid-template-columns:60px 1fr;gap:8px;padding:2px 9px;"><span style="color:oklch(46% 0.03 255);">SCOPE</span><span style="font-weight:600;">tools.py &rarr; decision.py &rarr; app.py &rarr; dashboard</span></div>
+      </div>
+    </div>
+
+    <div style="border:1.5px solid oklch(24% 0.045 255);background:oklch(97.5% 0.008 80 / 0.6);margin-bottom:10px;flex:1;min-height:0;display:flex;flex-direction:column;">
+      <div style="font-size:10.5px;letter-spacing:1.5px;font-weight:600;border-bottom:1px solid oklch(80% 0.02 75);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;flex:none;">
+        <span>FIG.1 &mdash; ISOMETRIC SYSTEM MAP</span>
+        <span style="font-size:9px;letter-spacing:0.5px;font-weight:600;color:oklch(46% 0.03 255);border:1px solid oklch(80% 0.02 75);padding:2px 6px;">TWO PATHS &middot; ONE DASHBOARD</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;">
+      <div ref="{{ setWrapRef }}" style="position:relative;width:{{ pxWidth }};height:{{ pxHeight }};zoom:{{ scale }};flex:none;">
+        <svg viewBox="{{ viewBox }}" style="width:100%;height:100%;display:block;overflow:visible;">
+          <defs>
+            <marker id="arrow-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" fill="oklch(24% 0.045 255)"></path>
+            </marker>
+            <marker id="arrow-copper" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" fill="oklch(56% 0.13 48)"></path>
+            </marker>
+            <marker id="arrow-soft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" fill="oklch(46% 0.03 255)"></path>
+            </marker>
+          </defs>
+
+          <sc-for list="{{ edges }}" as="e" hint-placeholder-count="10">
+            <path d="{{ e.d }}" stroke="{{ e.stroke }}" stroke-width="{{ e.width }}" stroke-dasharray="{{ e.dash }}" fill="none" marker-end="{{ e.marker }}"></path>
+          </sc-for>
+
+          <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="10">
+            <polygon points="{{ n.leftPts }}" fill="{{ n.leftFill }}" stroke="{{ n.stroke }}" stroke-width="1.4" stroke-dasharray="{{ n.faceDash }}"></polygon>
+            <polygon points="{{ n.rightPts }}" fill="{{ n.rightFill }}" stroke="{{ n.stroke }}" stroke-width="1.4" stroke-dasharray="{{ n.faceDash }}"></polygon>
+            <polygon points="{{ n.topPts }}" fill="{{ n.topFill }}" stroke="{{ n.stroke }}" stroke-width="1.4" stroke-dasharray="{{ n.faceDash }}"></polygon>
+            <sc-if value="{{ n.accentBottom }}" hint-placeholder-val="{{ false }}">
+              <line x1="{{ n.accentX1 }}" y1="{{ n.accentY }}" x2="{{ n.accentX2 }}" y2="{{ n.accentY }}" stroke="oklch(56% 0.13 48)" stroke-width="3"></line>
+            </sc-if>
+          </sc-for>
+        </svg>
+
+        <div style="position:absolute;inset:0;">
+          <sc-for list="{{ edges }}" as="e" hint-placeholder-count="10">
+            <sc-if value="{{ e.label }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;left:{{ e.pctX }}%;top:{{ e.pctY }}%;transform:translate(-50%,-50%);background:oklch(96% 0.014 80);padding:1px 5px;white-space:nowrap;font-size:9px;letter-spacing:0.3px;font-family:'IBM Plex Mono',monospace;color:{{ e.labelColor }};border:1px solid {{ e.labelColor }};">{{ e.label }}</div>
+            </sc-if>
+          </sc-for>
+          <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="10">
+            <div style="position:absolute;left:{{ n.pctX }}%;top:{{ n.pctY }}%;white-space:nowrap;font-family:'IBM Plex Mono',monospace;line-height:1.35;">
+              <sc-for list="{{ n.lines }}" as="ln" hint-placeholder-count="3">
+                <div style="font-size:{{ ln.size }}px;font-weight:{{ ln.weight }};color:{{ ln.color }};letter-spacing:{{ ln.ls }}px;">{{ ln.text }}</div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div style="border:1.5px solid oklch(24% 0.045 255);background:oklch(97.5% 0.008 80 / 0.6);padding:9px 16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-size:9.5px;color:oklch(46% 0.03 255);flex:none;">
+      <span style="font-weight:600;letter-spacing:1px;color:oklch(24% 0.045 255);">KEY</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:11px;height:11px;background:oklch(88% 0.015 79);border:1.4px solid oklch(24% 0.045 255);"></span>External API</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:11px;height:11px;background:oklch(80% 0.045 250);border:1.4px solid oklch(24% 0.045 255);"></span>Python module</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:11px;height:11px;background:oklch(79% 0.065 48);border:1.4px solid oklch(24% 0.045 255);"></span>AI agent</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:11px;height:11px;background:oklch(26% 0.04 255);border:1.4px solid oklch(24% 0.045 255);"></span>Rules gate</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:11px;height:11px;background:oklch(92% 0.011 80);border:1.4px solid oklch(24% 0.045 255);border-bottom:3px solid oklch(56% 0.13 48);"></span>Frontend UI</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-top:2px solid oklch(24% 0.045 255);"></span>Data flow</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-top:2px dashed oklch(56% 0.13 48);"></span>Replan loop (&times;1)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-top:2px dashed oklch(46% 0.03 255);"></span>Canned replay</span>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { scale: 1 };
+
+  buildLayout() {
+    if (this._layout) return this._layout;
+    const INK = "oklch(24% 0.045 255)", INK_SOFT = "oklch(46% 0.03 255)", INK_FAINT = "oklch(60% 0.02 250)";
+    const CREAM = "oklch(96% 0.014 80)", COPPER = "oklch(56% 0.13 48)", BLUE = "oklch(40% 0.1 250)";
+
+    const PAL = {
+      external: { top: "oklch(94% 0.014 80)", left: "oklch(82% 0.017 78)", right: "oklch(88% 0.015 79)", stroke: INK, t1: INK, t2: INK_SOFT },
+      module:   { top: "oklch(87% 0.035 250)", left: "oklch(72% 0.055 250)", right: "oklch(80% 0.045 250)", stroke: INK, t1: INK, t2: BLUE },
+      agent:    { top: "oklch(87% 0.045 48)", left: "oklch(71% 0.08 48)", right: "oklch(79% 0.065 48)", stroke: INK, t1: INK, t2: COPPER },
+      gate:     { top: "oklch(34% 0.045 255)", left: "oklch(19% 0.035 255)", right: "oklch(26% 0.04 255)", stroke: "oklch(15% 0.03 255)", t1: CREAM, t2: "oklch(80% 0.02 250)" },
+      replay:   { top: "oklch(92% 0.012 80)", left: "oklch(83% 0.014 78)", right: "oklch(88% 0.013 79)", stroke: INK_SOFT, t1: INK_SOFT, t2: INK_FAINT, dash: "4,3" },
+      frontend: { top: "oklch(97% 0.01 80)", left: "oklch(86% 0.013 79)", right: "oklch(92% 0.011 80)", stroke: INK, t1: INK, t2: COPPER, accentBottom: true },
+    };
+
+    // Compact switchback (serpentine) layout: row 1 flows left->right,
+    // drops down, row 2 continues right->left. Keeps total footprint small.
+    const defs = [
+      { id: "octopus", kind: "external", cx: 150, cy: 150, size: "n", lines: ["EXTERNAL API", "Octopus Agile", "get_price_forecast()"] },
+      { id: "carbon", kind: "external", cx: 150, cy: 430, size: "n", lines: ["EXTERNAL API", "Carbon Intensity API", "get_carbon_forecast()"] },
+      { id: "tools", kind: "module", cx: 470, cy: 290, size: "n", lines: ["PYTHON MODULE", "tools.py", "fetch + cache fallback"] },
+      { id: "live", kind: "module", cx: 790, cy: 210, size: "n", lines: ["PYTHON MODULE", "live.py", "rolling forecast (Live)"] },
+      { id: "analyst", kind: "agent", cx: 1110, cy: 150, size: "n", lines: ["AI AGENT \u00b7 opus-5", "Analyst", "proposes Window"] },
+      { id: "rules", kind: "gate", cx: 1110, cy: 600, size: "n", lines: ["RULES GATE \u00b7 CODE", "rules.py", "price cap \u00b7 min-gap"] },
+      { id: "reviewer", kind: "agent", cx: 790, cy: 680, size: "n", lines: ["AI AGENT \u00b7 sonnet-5", "Reviewer", "approves / flags"] },
+      { id: "app", kind: "module", cx: 470, cy: 760, size: "n", lines: ["FLASK APP", "app.py", "SSE: /run/live, /simulated"] },
+      { id: "dashboard", kind: "frontend", cx: 150, cy: 840, size: "l", lines: ["BROWSER UI", "Dashboard", "html \u00b7 js \u00b7 css"] },
+      { id: "fixture", kind: "replay", cx: 470, cy: 1000, size: "s", lines: ["FIXTURE REPLAY", "simulated_transcript.json", "captured agent run"] },
+    ];
+
+    const SIZES = { n: { a: 64, b: 32, H: 88 }, s: { a: 44, b: 22, H: 54 }, l: { a: 74, b: 37, H: 92 } };
+
+    const nodesRaw = defs.map(d => {
+      const { cx, cy } = d;
+      const { a, b, H } = SIZES[d.size];
+      const top = { x: cx, y: cy - b }, right = { x: cx + a, y: cy }, bottom = { x: cx, y: cy + b }, left = { x: cx - a, y: cy };
+      const leftFace = [left, bottom, { x: bottom.x, y: bottom.y + H }, { x: left.x, y: left.y + H }];
+      const rightFace = [bottom, right, { x: right.x, y: right.y + H }, { x: bottom.x, y: bottom.y + H }];
+      const topFace = [top, right, bottom, left];
+      const anchorRight = { x: right.x, y: right.y + H / 2 };
+      const anchorLeft = { x: left.x, y: left.y + H / 2 };
+      const anchorTop = { x: cx, y: top.y };
+      const anchorBottom = { x: cx, y: bottom.y + H };
+      const labelX = left.x + 4;
+      const labelTopY = bottom.y + H + 20;
+      const pal = PAL[d.kind];
+      const lineSpecs = [
+        { size: 8, weight: 600, color: pal.t2, ls: 0.5 },
+        { size: 13.5, weight: 700, color: pal.t1, ls: 0 },
+        { size: 9, weight: 400, color: pal.t2, ls: 0 },
+      ];
+      const lines = d.lines.map((text, i) => ({ text, y: labelTopY + i * 15, ...lineSpecs[i] }));
+      return { id: d.id, kind: d.kind, pal, leftFace, rightFace, topFace, anchorRight, anchorLeft, anchorTop, anchorBottom, labelX, lines, accentY: bottom.y + H, accentX1: left.x, accentX2: right.x };
+    });
+
+    const byId = Object.fromEntries(nodesRaw.map(n => [n.id, n]));
+
+    const edgeDefs = [
+      { from: "octopus", to: "tools", type: "flow", label: "price forecast", bend: -40 },
+      { from: "carbon", to: "tools", type: "flow", label: "carbon forecast", bend: 30 },
+      { from: "tools", to: "live", type: "flow", label: "fetched / cached", bend: -35 },
+      { from: "live", to: "analyst", type: "flow", label: "DayForecast", bend: -35 },
+      { from: "analyst", to: "rules", type: "flow", label: "ProposedWindow", from2: "anchorBottom", to2: "anchorTop", bend: 0 },
+      { from: "rules", to: "reviewer", type: "flow", label: "violations[]", from2: "anchorLeft", to2: "anchorRight", reverseDir: true, bend: 40 },
+      { from: "reviewer", to: "app", type: "flow", label: "Recommendation", from2: "anchorLeft", to2: "anchorRight", reverseDir: true, bend: 40 },
+      { from: "app", to: "dashboard", type: "flow", label: "SSE: data: {...}", from2: "anchorLeft", to2: "anchorRight", reverseDir: true, bend: 40, wide: true },
+      { from: "fixture", to: "app", type: "replay", label: "canned replay", from2: "anchorTop", to2: "anchorBottom", reverseArc: true, bend: -70 },
+      { from: "reviewer", to: "analyst", type: "loop", label: "replan \u00d71 (decision.py)", from2: "anchorTop", to2: "anchorRight", cpAbs: { x: 1480, y: 300 } },
+    ];
+
+    const STYLE = {
+      flow: { stroke: INK, width: 2.4, dash: "", marker: "url(#arrow-ink)" },
+      loop: { stroke: COPPER, width: 2.2, dash: "6,4", marker: "url(#arrow-copper)" },
+      replay: { stroke: INK_SOFT, width: 2, dash: "5,4", marker: "url(#arrow-soft)" },
+    };
+
+    const edgesRaw = edgeDefs.map(e => {
+      const from = byId[e.from], to = byId[e.to];
+      const p1 = from[e.from2 || "anchorRight"];
+      const p2 = to[e.to2 || "anchorLeft"];
+      let mx, my, labelX, labelY;
+      if (e.cpAbs) {
+        mx = e.cpAbs.x; my = e.cpAbs.y;
+        labelX = 0.25 * p1.x + 0.5 * mx + 0.25 * p2.x;
+        labelY = 0.25 * p1.y + 0.5 * my + 0.25 * p2.y;
+      } else {
+        mx = (p1.x + p2.x) / 2; my = (p1.y + p2.y) / 2 + e.bend;
+        labelX = mx; labelY = my;
+      }
+      const st = STYLE[e.type];
+      return { p1, p2, mx, my, labelX, labelY, st, wide: e.wide, label: e.label };
+    });
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodesRaw.forEach(n => {
+      [...n.leftFace, ...n.rightFace, ...n.topFace].forEach(p => {
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+      });
+      n.lines.forEach(ln => {
+        maxY = Math.max(maxY, ln.y);
+        maxX = Math.max(maxX, n.labelX + ln.text.length * (ln.size * 0.62));
+      });
+      minX = Math.min(minX, n.labelX);
+    });
+    edgesRaw.forEach(e => {
+      minX = Math.min(minX, e.mx, e.labelX); maxX = Math.max(maxX, e.mx, e.labelX);
+      minY = Math.min(minY, e.my, e.labelY); maxY = Math.max(maxY, e.my, e.labelY);
+    });
+
+    const pad = 50;
+    const ox = pad - minX, oy = pad - minY;
+    const shift = p => ({ x: p.x + ox, y: p.y + oy });
+    const ptsStr = pts => pts.map(p => { const s = shift(p); return `${s.x.toFixed(1)},${s.y.toFixed(1)}`; }).join(" ");
+
+    const width = maxX - minX + pad * 2, height = maxY - minY + pad * 2;
+    const pctX = x => (x / width * 100).toFixed(2);
+    const pctY = y => (y / height * 100).toFixed(2);
+
+    const nodes = nodesRaw.map(n => {
+      const firstLineY = shift({ x: 0, y: n.lines[0].y }).y;
+      return {
+        leftPts: ptsStr(n.leftFace), rightPts: ptsStr(n.rightFace), topPts: ptsStr(n.topFace),
+        leftFill: n.pal.left, rightFill: n.pal.right, topFill: n.pal.top, stroke: n.pal.stroke, faceDash: n.pal.dash || "",
+        accentBottom: !!n.pal.accentBottom, accentY: shift({ x: 0, y: n.accentY }).y,
+        accentX1: shift({ x: n.accentX1, y: n.accentY }).x, accentX2: shift({ x: n.accentX2, y: n.accentY }).x,
+        pctX: pctX(shift({ x: n.labelX, y: 0 }).x), pctY: pctY(firstLineY - 8),
+        lines: n.lines.map(ln => ({ text: ln.text, size: ln.size, weight: ln.weight, color: ln.color, ls: ln.ls })),
+      };
+    });
+
+    const edges = edgeDefs.map((e, i) => {
+      const r = edgesRaw[i];
+      const p1 = shift(r.p1), p2 = shift(r.p2), mx = shift({ x: r.mx, y: 0 }).x, my = shift({ x: 0, y: r.my }).y;
+      const lx = shift({ x: r.labelX, y: 0 }).x, ly = shift({ x: 0, y: r.labelY }).y;
+      const d = `M${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+      return {
+        d, stroke: r.st.stroke, width: r.wide ? r.st.width + 0.6 : r.st.width, dash: r.st.dash, marker: r.st.marker,
+        label: r.label, labelColor: r.st.stroke, pctX: pctX(lx), pctY: pctY(ly),
+      };
+    });
+
+    this._layout = { nodes, edges, width, height, viewBox: `0 0 ${width.toFixed(0)} ${height.toFixed(0)}` };
+    return this._layout;
+  }
+
+  fit = () => {
+    if (!this.wrapEl) return;
+    const { width, height } = this.buildLayout();
+    const availW = this.wrapEl.parentElement.clientWidth - 4;
+    const availH = this.wrapEl.parentElement.clientHeight - 4;
+    const s = Math.max(0.15, Math.min(availW / width, availH / height, 1));
+    if (Math.abs(s - this.state.scale) > 0.005) this.setState({ scale: s });
+  };
+
+  componentDidMount() {
+    this.fit();
+    this._ro = new ResizeObserver(() => this.fit());
+    if (this.wrapEl && this.wrapEl.parentElement) this._ro.observe(this.wrapEl.parentElement);
+    window.addEventListener("resize", this.fit);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.fit);
+    if (this._ro) this._ro.disconnect();
+  }
+
+  renderVals() {
+    const layout = this.buildLayout();
+    return {
+      nodes: layout.nodes, edges: layout.edges, viewBox: layout.viewBox,
+      pxWidth: `${layout.width.toFixed(0)}px`, pxHeight: `${layout.height.toFixed(0)}px`,
+      scale: this.state.scale,
+      setWrapRef: (el) => { this.wrapEl = el; },
+    };
+  }
+}
+
+</script>
+</body>
+</html>
