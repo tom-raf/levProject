@@ -9,12 +9,14 @@ decision.py's Analyst/Reviewer interfaces exactly (see #2, #5).
 import json
 import os
 import re
+from datetime import datetime
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from live import RollingForecast, rolling_window_start
 from rules import MIN_GAP_HOURS, ProposedWindow, price_cap
-from windows import candidate_windows, window_start
+from windows import candidate_windows, window_start as day_window_start
 
 load_dotenv()
 
@@ -50,20 +52,39 @@ def _complete(model: str, system: str, user: str) -> str:
     return response.choices[0].message.content or ""
 
 
-def _format_candidates(day, prices: list[float], carbon: list[float], last_window_end=None) -> str:
+def _slot_start(forecast, i: int) -> datetime:
+    """Works for either a single-day DayForecast (decision.py) or a
+    now-anchored, possibly cross-midnight RollingForecast (live.py) -- the
+    two seams sharing this Analyst/Reviewer via decide_day()'s generic
+    interface."""
+    if isinstance(forecast, RollingForecast):
+        return rolling_window_start(forecast, i)
+    return day_window_start(forecast.day, i)
+
+
+def _forecast_label(forecast) -> str:
+    if isinstance(forecast, RollingForecast):
+        return f"the forecast horizon starting {forecast.start.isoformat()}"
+    return forecast.day.isoformat()
+
+
+def _format_candidates(forecast, last_window_end=None) -> str:
     lines = []
-    for i, price, carb in candidate_windows(prices, carbon):
-        start = window_start(day, i)
+    for i, price, carb in candidate_windows(forecast.prices, forecast.carbon):
+        start = _slot_start(forecast, i)
         if last_window_end is not None:
             gap_hours = (start - last_window_end).total_seconds() / 3600
             if gap_hours < MIN_GAP_HOURS:
                 continue  # already ineligible on the min-gap rule -- don't offer it as a candidate
-        lines.append(f"- start {start:%H:%M}, avg price {price:.2f}p/kWh, avg carbon {carb:.0f}gCO2/kWh")
+        # Full ISO datetime, not bare "HH:MM" -- a rolling horizon can span
+        # midnight into tomorrow, and the Analyst echoes this exact string
+        # back rather than us reconstructing a date from a truncated time.
+        lines.append(f"- start {start.isoformat()}, avg price {price:.2f}p/kWh, avg carbon {carb:.0f}gCO2/kWh")
     return "\n".join(lines)
 
 
 def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
-    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon, forecast.last_window_end)
+    candidates_text = _format_candidates(forecast, forecast.last_window_end)
     cap = price_cap(forecast.prices)
 
     if reason is None:
@@ -84,23 +105,23 @@ def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
     )
     system = (
         "You are the Analyst in a grid battery dispatch system. Given a list of candidate "
-        f"4-hour charge windows for {forecast.day.isoformat()} (price cap for today: {cap:.2f}p/kWh), "
+        f"4-hour charge windows for {_forecast_label(forecast)} (price cap: {cap:.2f}p/kWh), "
         f"pick one and explain the trade-off.{gap_note} Respond with ONLY a JSON object: "
-        '{"start": "HH:MM", "avg_price": <number>, "explanation": "<plain language>"}.'
+        '{"start": "<the exact start value copied from the chosen candidate line>", '
+        '"avg_price": <number>, "explanation": "<plain language>"}.'
     )
     user = f"{instruction}\n\nCandidate windows:\n{candidates_text}"
 
     content = _complete(ANALYST_MODEL, system, user)
     data = _extract_json(content)
 
-    hour, minute = (int(x) for x in data["start"].split(":"))
-    start = window_start(forecast.day, 0).replace(hour=hour, minute=minute)
+    start = datetime.fromisoformat(data["start"])
     window = ProposedWindow(start=start, avg_price=float(data["avg_price"]))
     return window, str(data["explanation"])
 
 
 def llm_reviewer(window: ProposedWindow, forecast) -> tuple[bool, str]:
-    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon, forecast.last_window_end)
+    candidates_text = _format_candidates(forecast, forecast.last_window_end)
     cap = price_cap(forecast.prices)
 
     gap_note = (
@@ -112,11 +133,11 @@ def llm_reviewer(window: ProposedWindow, forecast) -> tuple[bool, str]:
         "You are the Reviewer in a grid battery dispatch system. The hard rules (price cap, "
         "min-gap) already passed -- your job is soft judgment only: is this a genuinely good "
         f"price/carbon trade-off, or does a clearly better within-cap alternative exist?{gap_note} "
-        f"Price cap for {forecast.day.isoformat()}: {cap:.2f}p/kWh. "
+        f"Price cap for {_forecast_label(forecast)}: {cap:.2f}p/kWh. "
         'Respond with ONLY a JSON object: {"approved": <true|false>, "reasoning": "<plain language>"}.'
     )
     user = (
-        f"Proposed window: start {window.start:%H:%M}, avg price {window.avg_price:.2f}p/kWh.\n\n"
+        f"Proposed window: start {window.start.isoformat()}, avg price {window.avg_price:.2f}p/kWh.\n\n"
         f"All candidate windows for context:\n{candidates_text}"
     )
 

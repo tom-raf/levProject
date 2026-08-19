@@ -13,6 +13,10 @@ class RollingForecast:
     start: datetime  # slot-start time of index 0: the next slot boundary at/after `now`
     prices: list[float]
     carbon: list[float]
+    # Populated by decide_day() before calling analyst/reviewer -- mirrors
+    # DayForecast.last_window_end, needed for decide_day()'s dataclasses.replace()
+    # call to work generically across both forecast types.
+    last_window_end: datetime | None = None
 
 
 def _next_slot_boundary(now: datetime) -> datetime:

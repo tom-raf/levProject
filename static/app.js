@@ -282,7 +282,7 @@ transcriptToggle.addEventListener("click", () => {
 });
 
 document.getElementById("btn-live").addEventListener("click", () => {
-  console.log("Live run -- not wired yet (ticket #11)");
+  runStream("live", "/run/live");
 });
 
 document.getElementById("btn-simulated").addEventListener("click", () => {

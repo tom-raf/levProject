@@ -1,6 +1,5 @@
-"""Dashboard shell + Simulated run route. GET / serves the blueprint-styled
-page recreating design/design_handoff_dashboard/'s mockup. POST /run/live
-(ticket #11) still to come.
+"""Dashboard shell + Live/Simulated run routes. GET / serves the
+blueprint-styled page recreating design/design_handoff_dashboard/'s mockup.
 
 SSE note: design/PLAN.md and design/SPEC.md describe these as POST routes
 consumed via `EventSource` -- but the browser's native EventSource only ever
@@ -10,11 +9,18 @@ plain SSE (`data: {...}\\n\\n`) and the routes are still POST, matching the
 locked design's intent."""
 
 import json
+import queue
+import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Flask, Response, render_template
+
+from decision import decide_day
+from live import build_rolling_forecast
+from llm_agents import llm_analyst, llm_reviewer
+from tools import get_carbon_forecast, get_price_forecast
 
 app = Flask(__name__)
 
@@ -55,6 +61,54 @@ def run_simulated():
             "status": final["status"],
             "window_start": final["window"]["start"],
         })
+
+    return Response(stream(), mimetype="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+
+@app.route("/run/live", methods=["POST"])
+def run_live():
+    now = datetime.now(timezone.utc)
+    today, tomorrow = now.date(), now.date() + timedelta(days=1)
+
+    today_prices, today_carbon = get_price_forecast(today), get_carbon_forecast(today)
+    try:
+        tomorrow_prices, tomorrow_carbon = get_price_forecast(tomorrow), get_carbon_forecast(tomorrow)
+    except Exception:
+        # Not yet published (Octopus publishes ~1 day ahead, roughly 4pm-8pm UK
+        # time) or a live/cache fetch failure -- an empty/thin horizon is an
+        # accepted outcome here (design/PLAN.md), not an error.
+        tomorrow_prices, tomorrow_carbon = None, None
+
+    forecast = build_rolling_forecast(now, today_prices, today_carbon, tomorrow_prices, tomorrow_carbon)
+
+    # Most recently *approved* Live-type run this session, per PLAN.md decision
+    # 7 -- wired properly in ticket #12. Not yet implemented here.
+    last_window_end = None
+
+    def stream():
+        yield _sse({"step": "forecast", "start": forecast.start.isoformat(), "prices": forecast.prices, "carbon": forecast.carbon})
+
+        events: queue.Queue = queue.Queue()
+
+        def worker():
+            decide_day(forecast, llm_analyst, llm_reviewer, last_window_end, on_step=events.put)
+            events.put(None)  # sentinel: decide_day() has returned
+
+        threading.Thread(target=worker, daemon=True).start()
+
+        final = None
+        while (event := events.get()) is not None:
+            if event["step"] == "final":
+                final = event
+            yield _sse(event)
+
+        if final is not None:
+            RUN_HISTORY.append({
+                "type": "live",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": final["status"],
+                "window_start": final["window"]["start"],
+            })
 
     return Response(stream(), mimetype="text/event-stream", headers={"Cache-Control": "no-cache"})
 
