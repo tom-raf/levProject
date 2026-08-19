@@ -1,33 +1,138 @@
-[
-  {
-    "step": "proposal",
-    "attempt": 1,
-    "window": {
-      "start": "2026-08-19T00:00:00+00:00",
-      "avg_price": 22.0
+{
+  "forecast": {
+    "day": "2026-08-19",
+    "prices": [
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0,
+      30.0
+    ],
+    "carbon": [
+      150.0,
+      150.0,
+      150.0,
+      150.0,
+      150.0,
+      150.0,
+      150.0,
+      150.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ]
+  },
+  "events": [
+    {
+      "step": "proposal",
+      "attempt": 1,
+      "window": {
+        "start": "2026-08-19T00:00:00+00:00",
+        "avg_price": 22.0
+      },
+      "explanation": "I'm recommending the 00:00-04:00 window at 22.00p/kWh and about 150gCO2/kWh. The real choice is between this and the 10:00 window, which is much cleaner (80gCO2/kWh) but costs 26.00p/kWh. Buying that cleaner power means paying an extra 4p/kWh to avoid roughly 70g of CO2 per kWh, which works out to about 57p per kilogram of CO2 avoided, or well over \u00a3500 a tonne. That is far more than carbon is normally valued at, so the environmental gain doesn't justify the cost on this occasion. The 10:00 window also sits exactly on today's 26.00p/kWh price cap, leaving no room for error: if actual prices land even slightly above forecast, we'd breach the cap and lose the window entirely. The overnight slot is 4p under the cheapest alternative and 4p under the cap, so it gives us both the lowest cost and a comfortable safety margin. The honest downside is that we are charging on a dirtier grid mix, so if the operator is working to a carbon target rather than a pure cost target, the 10:00 window is the better call and I'd revisit this if the cap were lifted even slightly."
     },
-    "explanation": "I'm recommending the 00:00-04:00 window at 22.00p/kWh and about 150gCO2/kWh. The real choice is between this and the 10:00 window, which is much cleaner (80gCO2/kWh) but costs 26.00p/kWh. Buying that cleaner power means paying an extra 4p/kWh to avoid roughly 70g of CO2 per kWh, which works out to about 57p per kilogram of CO2 avoided, or well over \u00a3500 a tonne. That is far more than carbon is normally valued at, so the environmental gain doesn't justify the cost on this occasion. The 10:00 window also sits exactly on today's 26.00p/kWh price cap, leaving no room for error: if actual prices land even slightly above forecast, we'd breach the cap and lose the window entirely. The overnight slot is 4p under the cheapest alternative and 4p under the cap, so it gives us both the lowest cost and a comfortable safety margin. The honest downside is that we are charging on a dirtier grid mix, so if the operator is working to a carbon target rather than a pure cost target, the 10:00 window is the better call and I'd revisit this if the cap were lifted even slightly."
-  },
-  {
-    "step": "rule_check",
-    "attempt": 1,
-    "violations": []
-  },
-  {
-    "step": "reviewer_verdict",
-    "attempt": 1,
-    "approved": true,
-    "reasoning": "The 00:00 window offers the lowest price in the entire candidate set (22.00p/kWh) while its carbon intensity (150gCO2/kWh) is moderate, well below the daytime peak of 200gCO2/kWh. No other window matches or beats this price, so it isn't dominated on cost. While a window like 10:00 (26.00p, 80gCO2/kWh) offers lower carbon, it costs 4p/kWh more (an 18% price increase) for a carbon cut, which is a genuine trade-off rather than a clear win. Given the significant price advantage and reasonably low carbon relative to the rest of the day, this window represents a sound price/carbon balance."
-  },
-  {
-    "step": "final",
-    "status": "approved",
-    "window": {
-      "start": "2026-08-19T00:00:00+00:00",
-      "avg_price": 22.0
+    {
+      "step": "rule_check",
+      "attempt": 1,
+      "violations": []
     },
-    "explanation": "I'm recommending the 00:00-04:00 window at 22.00p/kWh and about 150gCO2/kWh. The real choice is between this and the 10:00 window, which is much cleaner (80gCO2/kWh) but costs 26.00p/kWh. Buying that cleaner power means paying an extra 4p/kWh to avoid roughly 70g of CO2 per kWh, which works out to about 57p per kilogram of CO2 avoided, or well over \u00a3500 a tonne. That is far more than carbon is normally valued at, so the environmental gain doesn't justify the cost on this occasion. The 10:00 window also sits exactly on today's 26.00p/kWh price cap, leaving no room for error: if actual prices land even slightly above forecast, we'd breach the cap and lose the window entirely. The overnight slot is 4p under the cheapest alternative and 4p under the cap, so it gives us both the lowest cost and a comfortable safety margin. The honest downside is that we are charging on a dirtier grid mix, so if the operator is working to a carbon target rather than a pure cost target, the 10:00 window is the better call and I'd revisit this if the cap were lifted even slightly.",
-    "reviewer_reasoning": "The 00:00 window offers the lowest price in the entire candidate set (22.00p/kWh) while its carbon intensity (150gCO2/kWh) is moderate, well below the daytime peak of 200gCO2/kWh. No other window matches or beats this price, so it isn't dominated on cost. While a window like 10:00 (26.00p, 80gCO2/kWh) offers lower carbon, it costs 4p/kWh more (an 18% price increase) for a carbon cut, which is a genuine trade-off rather than a clear win. Given the significant price advantage and reasonably low carbon relative to the rest of the day, this window represents a sound price/carbon balance.",
-    "replanned": false
-  }
-]
+    {
+      "step": "reviewer_verdict",
+      "attempt": 1,
+      "approved": true,
+      "reasoning": "The 00:00 window offers the lowest price in the entire candidate set (22.00p/kWh) while its carbon intensity (150gCO2/kWh) is moderate, well below the daytime peak of 200gCO2/kWh. No other window matches or beats this price, so it isn't dominated on cost. While a window like 10:00 (26.00p, 80gCO2/kWh) offers lower carbon, it costs 4p/kWh more (an 18% price increase) for a carbon cut, which is a genuine trade-off rather than a clear win. Given the significant price advantage and reasonably low carbon relative to the rest of the day, this window represents a sound price/carbon balance."
+    },
+    {
+      "step": "final",
+      "status": "approved",
+      "window": {
+        "start": "2026-08-19T00:00:00+00:00",
+        "avg_price": 22.0
+      },
+      "explanation": "I'm recommending the 00:00-04:00 window at 22.00p/kWh and about 150gCO2/kWh. The real choice is between this and the 10:00 window, which is much cleaner (80gCO2/kWh) but costs 26.00p/kWh. Buying that cleaner power means paying an extra 4p/kWh to avoid roughly 70g of CO2 per kWh, which works out to about 57p per kilogram of CO2 avoided, or well over \u00a3500 a tonne. That is far more than carbon is normally valued at, so the environmental gain doesn't justify the cost on this occasion. The 10:00 window also sits exactly on today's 26.00p/kWh price cap, leaving no room for error: if actual prices land even slightly above forecast, we'd breach the cap and lose the window entirely. The overnight slot is 4p under the cheapest alternative and 4p under the cap, so it gives us both the lowest cost and a comfortable safety margin. The honest downside is that we are charging on a dirtier grid mix, so if the operator is working to a carbon target rather than a pure cost target, the 10:00 window is the better call and I'd revisit this if the cap were lifted even slightly.",
+      "reviewer_reasoning": "The 00:00 window offers the lowest price in the entire candidate set (22.00p/kWh) while its carbon intensity (150gCO2/kWh) is moderate, well below the daytime peak of 200gCO2/kWh. No other window matches or beats this price, so it isn't dominated on cost. While a window like 10:00 (26.00p, 80gCO2/kWh) offers lower carbon, it costs 4p/kWh more (an 18% price increase) for a carbon cut, which is a genuine trade-off rather than a clear win. Given the significant price advantage and reasonably low carbon relative to the rest of the day, this window represents a sound price/carbon balance.",
+      "replanned": false
+    }
+  ]
+}

@@ -49,8 +49,12 @@ def main() -> None:
 
     rec = decide_day(forecast, llm_analyst, llm_reviewer, last_window_end=None, on_step=events.append)
 
+    fixture = {
+        "forecast": {"day": forecast.day.isoformat(), "prices": forecast.prices, "carbon": forecast.carbon},
+        "events": events,
+    }
     FIXTURE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    FIXTURE_PATH.write_text(json.dumps(events, indent=2))
+    FIXTURE_PATH.write_text(json.dumps(fixture, indent=2))
     print(f"Captured {len(events)} step events to {FIXTURE_PATH}")
     print(f"Final status: {rec.status} (replanned={rec.replanned})")
 
