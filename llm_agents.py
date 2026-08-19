@@ -13,7 +13,7 @@ import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from rules import ProposedWindow, price_cap
+from rules import MIN_GAP_HOURS, ProposedWindow, price_cap
 from windows import candidate_windows, window_start
 
 load_dotenv()
@@ -50,15 +50,20 @@ def _complete(model: str, system: str, user: str) -> str:
     return response.choices[0].message.content or ""
 
 
-def _format_candidates(day, prices: list[float], carbon: list[float]) -> str:
+def _format_candidates(day, prices: list[float], carbon: list[float], last_window_end=None) -> str:
     lines = []
     for i, price, carb in candidate_windows(prices, carbon):
-        lines.append(f"- start {window_start(day, i):%H:%M}, avg price {price:.2f}p/kWh, avg carbon {carb:.0f}gCO2/kWh")
+        start = window_start(day, i)
+        if last_window_end is not None:
+            gap_hours = (start - last_window_end).total_seconds() / 3600
+            if gap_hours < MIN_GAP_HOURS:
+                continue  # already ineligible on the min-gap rule -- don't offer it as a candidate
+        lines.append(f"- start {start:%H:%M}, avg price {price:.2f}p/kWh, avg carbon {carb:.0f}gCO2/kWh")
     return "\n".join(lines)
 
 
 def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
-    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon)
+    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon, forecast.last_window_end)
     cap = price_cap(forecast.prices)
 
     if reason is None:
@@ -72,10 +77,15 @@ def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
             "Propose a revised 4-hour charge window that addresses it, and explain your reasoning."
         )
 
+    gap_note = (
+        " Windows within the required minimum gap since the last approved charge window have "
+        "already been excluded from the candidate list below."
+        if forecast.last_window_end is not None else ""
+    )
     system = (
         "You are the Analyst in a grid battery dispatch system. Given a list of candidate "
         f"4-hour charge windows for {forecast.day.isoformat()} (price cap for today: {cap:.2f}p/kWh), "
-        "pick one and explain the trade-off. Respond with ONLY a JSON object: "
+        f"pick one and explain the trade-off.{gap_note} Respond with ONLY a JSON object: "
         '{"start": "HH:MM", "avg_price": <number>, "explanation": "<plain language>"}.'
     )
     user = f"{instruction}\n\nCandidate windows:\n{candidates_text}"
@@ -90,13 +100,18 @@ def llm_analyst(forecast, reason: str | None) -> tuple[ProposedWindow, str]:
 
 
 def llm_reviewer(window: ProposedWindow, forecast) -> tuple[bool, str]:
-    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon)
+    candidates_text = _format_candidates(forecast.day, forecast.prices, forecast.carbon, forecast.last_window_end)
     cap = price_cap(forecast.prices)
 
+    gap_note = (
+        " Windows within the required minimum gap since the last approved charge window have "
+        "already been excluded from the candidate list, so every listed alternative is a fair comparison."
+        if forecast.last_window_end is not None else ""
+    )
     system = (
         "You are the Reviewer in a grid battery dispatch system. The hard rules (price cap, "
         "min-gap) already passed -- your job is soft judgment only: is this a genuinely good "
-        f"price/carbon trade-off, or does a clearly better within-cap alternative exist? "
+        f"price/carbon trade-off, or does a clearly better within-cap alternative exist?{gap_note} "
         f"Price cap for {forecast.day.isoformat()}: {cap:.2f}p/kWh. "
         'Respond with ONLY a JSON object: {"approved": <true|false>, "reasoning": "<plain language>"}.'
     )
