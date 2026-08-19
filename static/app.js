@@ -10,6 +10,23 @@ const CHART_PLOT_LEFT = 40, CHART_PLOT_RIGHT = 860, CHART_PLOT_TOP = 10, CHART_P
 const runsHistory = [];
 let lastProposalEl = null;
 
+// Session-wide, not per-run -- so any two runs' charts share one y-axis
+// scale and are actually comparable side by side, rather than each
+// auto-scaling to its own data and looking deceptively different/similar.
+let sessionPriceMin = null, sessionPriceMax = null;
+let sessionCarbonMin = null, sessionCarbonMax = null;
+
+function trackSessionRanges(prices, carbon) {
+  if (prices.length > 0) {
+    sessionPriceMin = sessionPriceMin === null ? Math.min(...prices) : Math.min(sessionPriceMin, ...prices);
+    sessionPriceMax = sessionPriceMax === null ? Math.max(...prices) : Math.max(sessionPriceMax, ...prices);
+  }
+  if (carbon.length > 0) {
+    sessionCarbonMin = sessionCarbonMin === null ? Math.min(...carbon) : Math.min(sessionCarbonMin, ...carbon);
+    sessionCarbonMax = sessionCarbonMax === null ? Math.max(...carbon) : Math.max(sessionCarbonMax, ...carbon);
+  }
+}
+
 // ---- transcript panel ----
 
 function resetTranscript() {
@@ -74,16 +91,16 @@ function renderChart(forecast, windowStartISO) {
     return;
   }
 
+  trackSessionRanges(prices, carbon);
+
   const px = (i) => CHART_PLOT_LEFT + (n > 1 ? i / (n - 1) : 0) * (CHART_PLOT_RIGHT - CHART_PLOT_LEFT);
 
-  const pMin = Math.min(...prices), pMax = Math.max(...prices);
-  const pPad = Math.max(1, (pMax - pMin) * 0.15);
-  const pLo = pMin - pPad, pHi = pMax + pPad;
+  const pPad = Math.max(1, (sessionPriceMax - sessionPriceMin) * 0.15);
+  const pLo = sessionPriceMin - pPad, pHi = sessionPriceMax + pPad;
   const priceY = (v) => CHART_PLOT_TOP + ((pHi - v) / (pHi - pLo)) * (CHART_PLOT_BOTTOM - CHART_PLOT_TOP);
 
-  const cMin = Math.min(...carbon), cMax = Math.max(...carbon);
-  const cPad = Math.max(1, (cMax - cMin) * 0.15);
-  const cLo = cMin - cPad, cHi = cMax + cPad;
+  const cPad = Math.max(1, (sessionCarbonMax - sessionCarbonMin) * 0.15);
+  const cLo = sessionCarbonMin - cPad, cHi = sessionCarbonMax + cPad;
   const carbonY = (v) => CHART_PLOT_TOP + ((cHi - v) / (cHi - cLo)) * (CHART_PLOT_BOTTOM - CHART_PLOT_TOP);
 
   const pricePath = prices.map((v, i) => `${px(i).toFixed(1)},${priceY(v).toFixed(1)}`).join(" ");
