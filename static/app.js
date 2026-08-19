@@ -161,7 +161,7 @@ function updateRecommendationCard(finalEvent, forecast) {
 function renderMinGapEmpty(message) {
   document.querySelector(".mingap-svg").innerHTML = `
     <line x1="10" y1="40" x2="370" y2="40" class="mingap-line"></line>
-    <text x="190" y="40" text-anchor="middle" class="mingap-placeholder" dominant-baseline="middle">${message}</text>
+    <text x="190" y="26" text-anchor="middle" class="mingap-placeholder" dominant-baseline="middle">${message}</text>
   `;
   document.getElementById("mingap-note").textContent = "applies only to Live runs";
 }

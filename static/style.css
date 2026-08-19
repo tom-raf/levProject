@@ -1,4 +1,8 @@
 :root {
+  /* Opt out of the browser's automatic dark-mode-for-web-content heuristic --
+     this is a deliberately light "cream blueprint" design, not a page that
+     forgot to theme itself. Without this, some browsers invert the palette. */
+  color-scheme: light;
   --cream: oklch(96% 0.014 80);
   --paper: oklch(90% 0.018 78);
   --line: oklch(80% 0.02 75);
